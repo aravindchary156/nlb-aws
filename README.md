@@ -1,10 +1,3 @@
-The repository **aravindchary156/nlb‑aws** you linked is empty — there are *no files or existing README content* in it right now. ([GitHub][1])
-
-However, I can create a **professional README.md template** for you that explains a typical use case for a project named *nlb‑aws* (presumably deploying a Network Load Balancer on AWS). You can customize the details based on your actual code later.
-
----
-
-```markdown
 # nlb‑aws
 
 A sample project to **deploy and manage an AWS Network Load Balancer (NLB)** using Infrastructure as Code (CloudFormation/Terraform/CLI). This repository provides resources and scripts to quickly set up a Network Load Balancer, register targets, and test connectivity.

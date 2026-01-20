@@ -1,104 +1,146 @@
-# AWS Network Load Balancer (NLB) with Terraform
+---
 
-This repository contains Terraform scripts to deploy an **AWS Network Load Balancer (NLB)** along with EC2 instances running Nginx. It automates the provisioning of network resources and load balancing in AWS.
+## 🚀 Overview
+
+This project helps you:
+
+- Provision an AWS **Network Load Balancer (NLB)** for your application.
+- Register EC2 instances or targets with target groups.
+- Configure listeners for TCP/UDP traffic.
+- Optionally deploy supporting infrastructure (VPC, subnets, security groups).
+- Deploy using CloudFormation, Terraform, or AWS CLI.
+
+Network Load Balancers operate at Layer‑4 and can handle **millions of requests per second** with very low latency, making them ideal for high‑performance workloads.
 
 ---
 
-## Table of Contents
+## 📌 Prerequisites
 
-- [Overview](#overview)
-- [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Terraform Deployment](#terraform-deployment)
-- [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
+Before deploying this solution, ensure you have:
 
----
-
-## Overview
-
-This project sets up:
-
-- AWS Network Load Balancer (NLB)
-- Two EC2 instances running Nginx
-- Security groups for secure access
-- Automatic registration of EC2 instances to the NLB target group
-
-Terraform ensures reproducible and consistent deployments.
-
----
-
-## Features
-
-- Fully automated NLB setup using Terraform
-- Easy to scale EC2 instances
-- Secure access with security groups
-- Modular Terraform structure for easy extension
-- AWS region and instance type configurable via variables
-
----
-
-## Prerequisites
-
-Before you start, make sure you have:
-
-- [Terraform](https://www.terraform.io/downloads) installed
-- An AWS account with programmatic access (Access Key & Secret Key)
+- An **AWS account**
 - AWS CLI configured (`aws configure`)
-- Basic knowledge of Terraform and AWS networking
+- Permissions to create:
+  - VPC, subnets, security groups
+  - Target Groups and NLB
+  - IAM roles (if using CloudFormation/Terraform)
+- Install one of the IaC tools below (optional):
+  - AWS CloudFormation
+  - Terraform
 
 ---
 
-## Terraform Deployment
+## 🧱 Architecture
 
-1. **Clone the repository**
+This project typically sets up the following:
+
+```
+
+Client → NLB → Target Group → EC2 / ECS / Lambda endpoints
+
+````
+
+Where:
+
+- **NLB** listens on specified TCP/UDP ports
+- Registered **Targets** receive traffic
+- **Health checks** keep track of target availability
+
+---
+
+## 📥 Deployment
+
+### Using AWS CloudFormation
+
 ```bash
-git clone https://github.com/aravindchary156/nlb-aws.git
-cd nlb-aws
+aws cloudformation deploy \
+  --template-file nlb‑template.yaml \
+  --stack-name nlb‑stack \
+  --capabilities CAPABILITY_NAMED_IAM \
+  --parameter-overrides VpcId=your‑vpc‑id SubnetIds=your‑subnet‑ids
+````
 
-2.Initialize Terraform
+### Using Terraform
 
+```bash
 terraform init
+terraform apply \
+  -var="vpc_id=your‑vpc‑id" \
+  -var="subnet_ids=[subnet‑1,subnet‑2]"
+```
 
+### Using AWS CLI (Manual)
 
-3.Preview the resources to be created
+```bash
+aws elbv2 create‑load‑balancer \
+  --name my‑nlb \
+  --type network \
+  --subnets subnet‑xxxx subnet‑yyyy
 
-terraform plan
+aws elbv2 create‑target‑group \
+  --name my‑nlb‑tg \
+  --protocol TCP \
+  --port 80 \
+  --vpc‑id your‑vpc‑id
 
+aws elbv2 register‑targets \
+  --target‑group‑arn arn:aws:elasticloadbalancing:… \
+  --targets Id=i‑xxxx Id=i‑yyyy
 
-4.Apply Terraform scripts
+aws elbv2 create‑listener \
+  --load‑balancer‑arn arn:aws:elasticloadbalancing:… \
+  --protocol TCP \
+  --port 80 \
+  --default‑actions Type=forward,TargetGroupArn=…
+```
 
-terraform apply
+---
 
+## 🛠 Configuration
 
-Type yes to confirm.
+| Setting       | Description                            |
+| ------------- | -------------------------------------- |
+| `VpcId`       | VPC where NLB will be deployed         |
+| `SubnetIds`   | Subnets for multi‑AZ high availability |
+| `Protocol`    | TCP/UDP protocol for listener          |
+| `Port`        | Port on which NLB listens              |
+| `HealthCheck` | Health check settings for targets      |
 
-5.Destroy resources (when no longer needed)
+---
 
-terraform destroy
+## 📦 Example Targets
 
-Usage
+You can register:
 
-After deployment:
+* EC2 instances
+* ECS services (with `Network` mode)
+* IP addresses (for Kubernetes or other services)
 
-The NLB DNS name will be output by Terraform.
+---
 
-Open the NLB DNS in your browser to access the Nginx welcome page running on EC2 instances.
+## ⚙️ Health Checks
 
-Modify EC2 instance configuration or Nginx settings as required in ec2.tf.
+Network Load Balancer health check configuration should match your service endpoint:
 
-Contributing
+```
+HealthCheckProtocol: TCP
+HealthCheckPort: traffic‑port
+HealthyThresholdCount: 3
+UnhealthyThresholdCount: 3
+```
 
-Contributions are welcome!
+---
 
-Fork the repository
+## 📖 Troubleshooting
 
-Create a new branch: git checkout -b feature-name
+* Check **CloudWatch logs** for NLB metrics.
+* Confirm **security group rules** allow traffic for ports you configured.
+* Ensure registered targets are responding on the expected port.
 
-Make your changes and commit: git commit -m 'Add new feature'
+---
 
-Push to the branch: git push origin feature-name
+## 📄 License
 
-Open a pull request
+This project is open source — feel free to modify and re‑use!
 
+---
